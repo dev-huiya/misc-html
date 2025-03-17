@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내 수익금, 얼마나 인출 신청해야 할까요?</title>
+  <style>
+    /* 전체 페이지 기본 스타일 */
+	body {
+	  background: #f7f7f7;
+	  color: #333;
+	  font-family: 'Helvetica Neue', Arial, sans-serif;
+	  margin: 0;
+	  padding: 20px;
+	  word-break: auto-phrase;
+	}
+
+	/* 컨테이너 영역: 중앙 정렬과 그림자 효과 */
+	.container {
+	  max-width: 600px;
+	  margin: 0 auto;
+	  background: #fff;
+	  border-radius: 8px;
+	  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+	  padding: 30px 20px;
+	}
+
+	/* 제목 및 안내 문구 */
+	h1 {
+	  font-size: 1.8em;
+	  text-align: center;
+	  color: #2c3e50;
+	}
+
+	p {
+	  font-size: 0.9em;
+	  text-align: center;
+	  color: #888;
+	  margin: 5px 0;
+	}
+
+	/* 라벨 스타일 */
+	label {
+	  display: block;
+	  margin-bottom: 5px;
+	  font-weight: bold;
+	  color: #555;
+	}
+
+	/* 인풋 필드 스타일 */
+	input[type="text"],
+	input[type="number"] {
+	  width: 100%;
+	  padding: 12px;
+	  font-size: 1em;
+	  border: 1px solid #ccc;
+	  border-radius: 4px;
+	  box-sizing: border-box;
+	  margin-bottom: 15px;
+	  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+	}
+
+	input[type="text"]:focus,
+	input[type="number"]:focus {
+	  border-color: #3498db;
+	  box-shadow: 0 0 8px rgba(52, 152, 219, 0.2);
+	  outline: none;
+	}
+
+	/* 결과 영역 스타일 */
+	.result h2 {
+	  color: #27ae60;
+	  text-align: center;
+	  margin-top: 20px;
+	}
+
+	/* 미리보기 테이블 스타일 */
+	table {
+	  width: 100%;
+	  border-collapse: collapse;
+	  margin-bottom: 20px;
+	}
+
+	th, td {
+	  padding: 12px;
+	  border: 1px solid #eee;
+	  text-align: right;
+	}
+
+	th {
+	  background-color: #ecf0f1;
+	  font-weight: bold;
+	}
+
+	/* 각 미리보기 섹션 제목 */
+	h3 {
+	  margin: 20px 0 10px;
+	  color: #2c3e50;
+	}
+
+	/* 모바일 대응 */
+	@media (max-width: 600px) {
+	  body {
+		padding: 10px;
+	  }
+	  .container {
+		padding: 20px 10px;
+	  }
+	}
+  </style>
+</head>
+<body>
+  <h1>내 수익금, 얼마나 인출 신청해야 할까요?</h1>
+  <p>※ 총 누적 수익과 세금 공제율을 기준으로 가능한 신청 금액 예시입니다.</p>
+  <p>※ 이 계산기는 입력된 데이터를 바탕으로 한 참고용 예시입니다. 최종 인출 신청 금액은 관련 기관의 기준에 따라 변동될 수 있습니다.</p>
+  
+  <div>
+    <label for="totalRevenue">누적 수익금 (원):</label>
+    <!-- 실제 숫자 입력을 위해 텍스트 타입 사용 (콤마 포맷팅 적용) -->
+    <input type="text" id="totalRevenue" placeholder="누적 수익금 입력">
+  </div>
+  
+  <div>
+    <label for="desiredAmount">받고 싶은 금액 (원):</label>
+    <input type="text" id="desiredAmount" placeholder="받고 싶은 금액 입력">
+  </div>
+  
+  <div>
+    <label for="taxRate">세금 공제율 (%):</label>
+    <input type="number" id="taxRate" placeholder="세금 공제율" value="3.3" step="0.1">
+  </div>
+  
+  <!-- 원하는 금액에 따른 계산 결과 (입력되었을 때만 표시) -->
+  <div class="result" id="result"></div>
+  <!-- 총 누적 수익금 기준 미리보기 (항상 표시) -->
+  <div class="example" id="examples"></div>
+  
+  <script>
+    // 숫자를 천단위 콤마로 포맷팅
+    function formatNumber(value) {
+      if(isNaN(value) || value === "") return "";
+      return Number(value).toLocaleString();
+    }
+    // 콤마 제거 (입력값에서 콤마 제거)
+    function unformatNumber(value) {
+      return value.replace(/,/g, '');
+    }
+    
+    function calculateAndDisplay() {
+      // 각 필드의 현재 값 (콤마 제거 후 숫자 변환)
+      const totalRevenueInput = document.getElementById('totalRevenue').value;
+      const desiredAmountInput = document.getElementById('desiredAmount').value;
+      const taxRateInput = document.getElementById('taxRate').value;
+      
+      const totalRevenue = parseFloat(unformatNumber(totalRevenueInput));
+      const taxRate = parseFloat(taxRateInput);
+      const desiredAmount = parseFloat(unformatNumber(desiredAmountInput));
+      
+      // 원하는 금액이 입력된 경우 신청액 계산 (세금공제 후 입금액 기준)
+      let resultHTML = "";
+      if(!isNaN(desiredAmount)) {
+        const appliedAmount = desiredAmount / (1 - taxRate / 100);
+        resultHTML = "<h2>신청해야 하는 금액: " + Math.ceil(appliedAmount).toLocaleString() + " 원</h2>";
+      }
+      document.getElementById('result').innerHTML = resultHTML;
+      
+      // 미리보기 테이블: 총 누적 수익금과 공제 비율이 유효할 경우 항상 표시
+      let previewHTML = "";
+      if(!isNaN(totalRevenue) && !isNaN(taxRate)) {
+        // 10만원 단위: 총 누적 수익금 내에서 최상위(가장 큰) 10만원 배수
+        if(totalRevenue >= 100000) {
+          let value10 = Math.floor(totalRevenue / 100000) * 100000;
+          let applied10 = value10 / (1 - taxRate / 100);
+          previewHTML += "<h3>최대 10만원 단위 예시</h3>";
+          previewHTML += "<table><tr><th>입금액 (원)</th><th>신청 금액 (원)</th></tr>";
+          previewHTML += "<tr><td>" + value10.toLocaleString() + "</td><td>" + Math.ceil(applied10).toLocaleString() + "</td></tr>";
+          previewHTML += "</table>";
+        }
+        
+        // 5만원 단위: 총 누적 수익금 내에서 최상위 5만원 배수
+        let value5 = 0;
+        if(totalRevenue >= 50000) {
+          value5 = Math.floor(totalRevenue / 50000) * 50000;
+          let applied5 = value5 / (1 - taxRate / 100);
+          previewHTML += "<h3>최대 5만원 단위 예시</h3>";
+          previewHTML += "<table><tr><th>입금액 (원)</th><th>신청 금액 (원)</th></tr>";
+          previewHTML += "<tr><td>" + value5.toLocaleString() + "</td><td>" + Math.ceil(applied5).toLocaleString() + "</td></tr>";
+          previewHTML += "</table>";
+        }
+        
+        // 1만원 단위: 총 누적 수익금 내의 1만원 배수 중,
+        // 만약 5만원 단위가 존재하면 그보다 큰 값만 표시 (중복 방지)
+        if(totalRevenue >= 10000) {
+          let max1 = Math.floor(totalRevenue / 10000) * 10000;
+          // 5만원 단위가 있으면 그 값보다 큰 1만원 배수부터, 없으면 1만원부터 시작
+          let start1 = (totalRevenue >= 50000 ? value5 + 10000 : 10000);
+          let ones = [];
+          for(let amt = start1; amt <= max1; amt += 10000) {
+            ones.push(amt);
+          }
+          // 내림차순(큰 금액부터) 정렬
+          ones.sort((a, b) => b - a);
+          if(ones.length > 0) {
+            previewHTML += "<h3>1만원 단위 예시 (5만원과 중복되지 않는 경우)</h3>";
+            previewHTML += "<table><tr><th>입금액 (원)</th><th>신청 금액 (원)</th></tr>";
+            ones.forEach(function(net) {
+              let applied = net / (1 - taxRate / 100);
+              previewHTML += "<tr><td>" + net.toLocaleString() + "</td><td>" + Math.ceil(applied).toLocaleString() + "</td></tr>";
+            });
+            previewHTML += "</table>";
+          }
+        }
+      }
+      document.getElementById('examples').innerHTML = previewHTML;
+    }
+    
+    // 실시간 계산을 위해 입력 시마다 이벤트 실행
+    document.getElementById('totalRevenue').addEventListener('input', calculateAndDisplay);
+    document.getElementById('desiredAmount').addEventListener('input', calculateAndDisplay);
+    document.getElementById('taxRate').addEventListener('input', calculateAndDisplay);
+    
+    // 포커스가 있을 때는 콤마 제거, 포커스 아웃 시 콤마 적용 (가독성 향상)
+    document.getElementById('totalRevenue').addEventListener('focus', function() {
+      this.value = unformatNumber(this.value);
+    });
+    document.getElementById('totalRevenue').addEventListener('blur', function() {
+      const unformatted = unformatNumber(this.value);
+      if(unformatted !== "" && !isNaN(unformatted)) {
+        this.value = formatNumber(unformatted);
+      }
+    });
+    
+    document.getElementById('desiredAmount').addEventListener('focus', function() {
+      this.value = unformatNumber(this.value);
+    });
+    document.getElementById('desiredAmount').addEventListener('blur', function() {
+      const unformatted = unformatNumber(this.value);
+      if(unformatted !== "" && !isNaN(unformatted)) {
+        this.value = formatNumber(unformatted);
+      }
+    });
+  </script>
+</body>
+</html>
